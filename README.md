@@ -52,6 +52,9 @@ are never "latest"). Replace `<tag>` with the tag shown on the
 curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/download/<tag>/install.sh | sh
 ```
 
+Pre-releases are for invited testers. They are checked with SHA-256 checksums
+but are not yet signed, notarized, or code-signed.
+
 ### Installer options
 
 Pass options after `sh -s --`, for example
