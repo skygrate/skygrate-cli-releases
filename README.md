@@ -16,41 +16,53 @@ contains one archive per platform, a `.sha256` checksum for each archive,
 | macOS 13 or later | Intel | `skygrate-darwin-amd64.tar.gz` |
 | Linux with glibc (Debian 12+, Ubuntu 22.04+, RHEL 9+) | x86-64 | `skygrate-linux-amd64.tar.gz` |
 | Linux with glibc (Debian 12+, Ubuntu 22.04+, RHEL 9+) | ARM64 | `skygrate-linux-arm64.tar.gz` |
-| Windows 10 or later, in Git Bash | x86-64 | `skygrate-windows-amd64.tar.gz` |
+| Windows 10 or later, in Git Bash | x86-64 | Not available yet: Windows builds are still being tested |
 
 If a release does not list your platform's archive, that platform is not
 available for that version yet. Alpine and other musl-based Linux
-distributions are not supported. On Windows, use Git Bash
-([Git for Windows](https://gitforwindows.org/)); PowerShell and cmd are not
-supported.
+distributions are not supported. When Windows builds are released, they will
+run in Git Bash ([Git for Windows](https://gitforwindows.org/)); PowerShell and
+cmd are not supported.
 
 ## Install
 
 ### Quick install
 
-In a macOS or Linux terminal, or in Git Bash on Windows:
+In a macOS or Linux terminal:
 
 ```bash
 curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/latest/download/install.sh | sh
 ```
 
-The script detects your platform, downloads the latest archive, checks its
-SHA-256 checksum, and installs it under `~/.skygrate`. It puts the `skygrate`
+This installs the latest stable release. The script detects your platform,
+downloads the archive, checks its SHA-256 checksum and the program's version,
+and installs it under `~/.skygrate`. It puts the `skygrate`
 command in `~/.local/bin` (macOS and Linux) or `~/bin` (Git Bash), and prints
 the line to add to your shell profile if that directory is not on your `PATH`.
 It does not need administrator rights and does not edit your shell profile.
 
-Options, passed after `sh -s --`:
+### Install a specific release or a pre-release
+
+Every release has its own installer, which installs exactly that release. Use
+it to pin a version, to roll back, or to install a pre-release (pre-releases
+are never "latest"). Replace `<tag>` with the tag shown on the
+[releases page](https://github.com/skygrate/skygrate-cli-releases/releases), for example `v0.2.0`:
 
 ```bash
-curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/latest/download/install.sh | sh -s -- --version v0.1.0
+curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/download/<tag>/install.sh | sh
 ```
+
+### Installer options
+
+Pass options after `sh -s --`, for example
+`curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/download/<tag>/install.sh | sh -s -- --bin-dir ~/bin`.
 
 | Option | Effect |
 | --- | --- |
-| `--version <tag>` | Install a specific release instead of the latest. |
 | `--bin-dir <dir>` | Put the `skygrate` command in another directory. |
-| `--uninstall` | Remove the CLI. Signs you out first unless `--keep-session` is given. |
+| `--version <tag>` | Install another release than the installer's own. |
+| `--uninstall` | Sign out, then remove the CLI. Stops without removing anything if sign-out fails. |
+| `--keep-session` | With `--uninstall`, remove the CLI without signing out. |
 
 ### Manual install on macOS
 
@@ -62,18 +74,20 @@ curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/latest/dow
    curl -LO "https://github.com/skygrate/skygrate-cli-releases/releases/download/${VERSION}/skygrate-darwin-arm64.tar.gz"
    ```
 
-   To install a specific version, set `VERSION` to its tag instead, for
-   example `VERSION=v0.1.0`.
+   `stable.txt` names the latest stable release. To install a specific
+   version or a pre-release, set `VERSION` to its tag instead, for example
+   `VERSION=v0.2.0`.
 
-2. Validate the archive (optional, recommended):
+2. Validate the archive. Do not skip this step:
 
    ```bash
    curl -LO "https://github.com/skygrate/skygrate-cli-releases/releases/download/${VERSION}/skygrate-darwin-arm64.tar.gz.sha256"
    shasum -a 256 --check skygrate-darwin-arm64.tar.gz.sha256
    ```
 
-   A valid archive prints `skygrate-darwin-arm64.tar.gz: OK`. If it prints
-   `FAILED`, delete the files and download them again.
+   Continue only if it prints `skygrate-darwin-arm64.tar.gz: OK`. If it
+   prints `FAILED`, delete the files, download them again, and do not run the
+   program.
 
 3. Extract it and put the command on your `PATH`:
 
@@ -109,7 +123,8 @@ block the program. Remove the download mark before extracting:
 ### Manual install on Linux
 
 Use `linux-amd64` on x86-64 and `linux-arm64` on ARM64 (`uname -m` shows
-`x86_64` or `aarch64`).
+`x86_64` or `aarch64`). For a specific version or a pre-release, set `VERSION`
+to its tag. Continue past `sha256sum --check` only if it prints `OK`.
 
 ```bash
 VERSION="$(curl -L -s https://github.com/skygrate/skygrate-cli-releases/releases/latest/download/stable.txt)"
@@ -128,6 +143,10 @@ KWallet, through the Secret Service). Servers without a keyring service cannot
 store a session yet; `skygrate doctor` reports this.
 
 ### Manual install on Windows (Git Bash)
+
+Windows builds are not available yet. These steps apply once a release lists
+`skygrate-windows-amd64.tar.gz`. Continue past `sha256sum --check` only if it
+prints `OK`.
 
 ```bash
 VERSION="$(curl -L -s https://github.com/skygrate/skygrate-cli-releases/releases/latest/download/stable.txt)"
@@ -167,18 +186,23 @@ skygrate whoami
 
 ## Upgrade
 
-Run the quick install again; it installs the latest release next to the
-current one and switches to it, keeping the previous version for rollback.
-To go back, install the previous tag with `--version`. With a manual install,
-repeat the manual steps for the new version.
+Run the quick install again, or a specific release's installer. It installs
+the new version next to the current one and switches to it, keeping the
+previous version for rollback. To go back, run the previous release's
+installer (`https://github.com/skygrate/skygrate-cli-releases/releases/download/<previous-tag>/install.sh`). With a manual
+install, repeat the manual steps for the new version.
 
 ## Uninstall
 
 ```bash
-curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/latest/download/install.sh | sh -s -- --uninstall
+curl -fsSL https://github.com/skygrate/skygrate-cli-releases/releases/download/<tag>/install.sh | sh -s -- --uninstall
 ```
 
-This signs you out, then removes `~/.skygrate` and the `skygrate` command.
+Any release's installer can uninstall; use the tag you installed (shown by
+`cat ~/.skygrate/current`). This signs you out, then removes `~/.skygrate` and
+the `skygrate` command. If signing out fails, for example because the
+credential store is locked, nothing is removed; fix that and retry, or add
+`--keep-session` to remove the CLI and keep the stored session.
 Your settings in `~/.config/skygrate` are kept; delete that directory to
 remove them too. After a manual install, run `skygrate logout`, then delete
 `~/.skygrate` and the `skygrate` link or launcher.
